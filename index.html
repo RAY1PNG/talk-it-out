@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Talk It Out</title>
+<meta name="description" content="A little chat buddy for when you need advice, a lift, or something to do.">
+<style>
+:root{
+  --bg:#fbf6f1; --panel:#ffffff; --ink:#2b2420; --muted:#7a6d64;
+  --bot:#f3ebe3; --me:#d9654b; --me-ink:#fff; --chip:#fff; --chip-line:#e6d8cc;
+  --accent:#d9654b; --soft:#fde9e2; --line:#eee2d8; --warn:#fff4d6; --warn-line:#f0d88a;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#1b1715; --panel:#24201d; --ink:#f2e9e2; --muted:#a8998e;
+    --bot:#2f2925; --me:#e0765c; --me-ink:#1b1715; --chip:#2a2421; --chip-line:#463c35;
+    --accent:#ef8a70; --soft:#3a2a24; --line:#352e29; --warn:#3a321c; --warn-line:#6b5a26;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1b1715; --panel:#24201d; --ink:#f2e9e2; --muted:#a8998e;
+  --bot:#2f2925; --me:#e0765c; --me-ink:#1b1715; --chip:#2a2421; --chip-line:#463c35;
+  --accent:#ef8a70; --soft:#3a2a24; --line:#352e29; --warn:#3a321c; --warn-line:#6b5a26;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;justify-content:center}
+.app{width:100%;max-width:560px;height:100dvh;display:flex;flex-direction:column;background:var(--panel);border-left:1px solid var(--line);border-right:1px solid var(--line)}
+header{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-size:20px;flex:none}
+header h1{font-size:17px;margin:0}
+header p{margin:0;font-size:13px;color:var(--muted)}
+header .spacer{flex:1}
+.icon-btn{border:1px solid var(--chip-line);background:var(--chip);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
+#log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:85%;padding:10px 14px;border-radius:18px;white-space:pre-line;word-wrap:break-word;animation:pop .18s ease-out}
+.bot{background:var(--bot);align-self:flex-start;border-bottom-left-radius:6px}
+.me{background:var(--me);color:var(--me-ink);align-self:flex-end;border-bottom-right-radius:6px}
+.msg.quote{font-style:italic;border-left:3px solid var(--accent)}
+.msg.warn{background:var(--warn);border:1px solid var(--warn-line)}
+.msg a{color:var(--accent);font-weight:600}
+.me a{color:inherit}
+.typing{display:inline-flex;gap:4px;padding:14px}
+.typing span{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:blink 1s infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+@keyframes pop{from{transform:translateY(4px);opacity:0}to{transform:none;opacity:1}}
+#chips{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 10px}
+.chip{border:1px solid var(--chip-line);background:var(--chip);color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;font-size:14px;cursor:pointer}
+.chip:hover{border-color:var(--accent)}
+.chip.primary{background:var(--accent);border-color:var(--accent);color:var(--me-ink)}
+form{display:flex;gap:8px;padding:10px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+#text{flex:1;min-width:0;border:1px solid var(--chip-line);background:var(--bg);color:var(--ink);border-radius:999px;padding:10px 16px;font:inherit}
+#text:focus{outline:2px solid var(--accent);outline-offset:1px}
+#send{border:0;background:var(--accent);color:var(--me-ink);border-radius:999px;padding:0 18px;font:inherit;font-weight:600;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="avatar" aria-hidden="true">🌷</div>
+    <div>
+      <h1 id="botName">Talk It Out</h1>
+      <p id="sub">here when Raymond's busy</p>
+    </div>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="restart" type="button">Start over</button>
+  </header>
+  <div id="log" aria-live="polite"></div>
+  <div id="chips"></div>
+  <form id="form" autocomplete="off">
+    <input id="text" placeholder="Type how you're feeling…" aria-label="Your message">
+    <button id="send" type="submit">Send</button>
+  </form>
+</div>
+
+<script>
+/* ===== Settings: change these ===== */
+const CFG = {
+  friendName: "",            // her name, e.g. "Mei" — leave "" for no name
+  myName: "Raymond",         // who she can reach out to
+  gamesUrl: "https://ray1png.github.io/main/games/"
+};
+
+/* ===== Content ===== */
+const WISDOM = [
+  "You can't pour from an empty cup. Look after yourself first, then you'll have more to give.",
+  "Feelings are visitors. Let them come and go, but you don't have to let them drive.",
+  "The right person won't make you feel like you're too much, or not enough.",
+  "Not every thought you have is true. Check before you believe it.",
+  "Speak when you're calm, not when you're hurt. The words will come out kinder.",
+  "Love is a verb. Watch what people do, not just what they say.",
+  "You teach people how to treat you by what you accept.",
+  "It's okay to outgrow people, places and versions of yourself.",
+  "A relationship is two people choosing each other on the hard days too, not just the easy ones.",
+  "Peace is worth more than being right.",
+  "Don't make a forever decision based on a one-night feeling. Sleep on it.",
+  "What's meant for you won't need to be chased, begged for or forced.",
+  "Healing isn't a straight line. Bad days don't erase good progress.",
+  "Be with someone who makes your life calmer, not more confusing.",
+  "When you're unsure, ask. Assuming is how small things turn into big fights.",
+  "Your worth doesn't go up or down based on someone else's attention.",
+  "The goal isn't to never fight. It's to fight fair and come back closer.",
+  "Rest is not giving up. Even the strongest people need to recharge.",
+  "Fall seven times, stand up eight. (Japanese proverb)",
+  "The best time to plant a tree was 20 years ago. The second best time is now. (Chinese proverb)",
+  "This too shall pass."
+];
+
+const MOTIVATE = [
+  "You've survived every bad day so far. That's a 100% track record. Today won't be the one that beats you. 💪",
+  "Small steps still count. You don't have to fix everything today, just do the next small thing.",
+  "You're doing better than you think you are. Seriously.",
+  "One bad chapter doesn't mean your story is bad. Keep turning pages.",
+  "Be proud of how far you've come, and kind about how far you've still got to go.",
+  "You are allowed to take up space, ask for what you need and say no.",
+  "Drink some water, take three slow breaths, and try again. You've got this.",
+  "Hard things are hard. That's not a sign you're doing it wrong, it's a sign you're doing something that matters."
+];
+
+const COMFORT = [
+  "I'm really sorry you're feeling like this. It makes sense to feel low sometimes, and you don't have to pretend you're fine here.",
+  "That sounds heavy. Be gentle with yourself tonight: something warm to drink, a comfy spot, and no big decisions until you've rested.",
+  "Sometimes it helps just to name it. Try finishing this sentence: \"Right now I feel ___ because ___.\" Typing it out can take a bit of the weight off."
+];
+
+const BORED = [
+  "Bored? I've got you. Raymond made some games you can play, some solo and some with a friend:\n<a href=\"{games}\" target=\"_blank\" rel=\"noopener\">🎮 Open the games</a>",
+  "Some other ideas while you're at it:\n• Make a playlist for your current mood\n• Go for a 10-minute walk and look for 3 things you've never noticed\n• Text an old friend a random memory you have of them\n• Try a 5-minute sketch of whatever's in front of you\n• Find a new recipe and make it tonight"
+];
+
+/* Relationship topics: label shown on chip, keywords for typing, intro, tips (rotated), a reflection question */
+const REL = {
+  fighting:{
+    label:"We keep fighting",
+    keys:["fight","fighting","argue","argument","arguing","quarrel","shout","yell","angry at","mad at","blew up"],
+    intro:"Fighting a lot is exhausting. Let's slow it down a bit.",
+    tips:[
+      "Take a time-out when it gets heated. Say \"I want to sort this out, but I need 20 minutes to calm down first.\" Then actually come back to it.",
+      "Use \"I feel\" instead of \"you always\". For example: \"I feel left out when plans change last minute\" lands softer than \"You never think about me.\"",
+      "Ask yourselves: what is this fight really about? Often a fight about dishes is really about not feeling respected or helped.",
+      "Pick one issue at a time. Bringing up old fights turns one problem into ten and nobody wins.",
+      "After it's over, check in: \"Are we okay?\" A small repair (a hug, a joke, a sorry) matters more than who was right."
+    ],
+    ask:"What do the fights usually start over? Sometimes spotting the pattern is half the fix."
+  },
+  distant:{
+    label:"Feeling distant or ignored",
+    keys:["ignore","ignored","ignoring","distant","distance","cold","dry","no time","busy","not texting","doesn't text","doesnt text","left on read","seen zone","drifting"],
+    intro:"Feeling far from someone you care about really hurts, especially when you're not sure why.",
+    tips:[
+      "Before assuming the worst, ask gently: \"Hey, I've been missing you lately. Is everything okay with you?\" They might be stressed about something unrelated.",
+      "Say what you need clearly instead of hinting. \"Could we have a proper call this weekend?\" works better than hoping they'll notice.",
+      "Plan something small together, like a walk, a meal or a game night. Closeness often comes back through doing things side by side.",
+      "Notice if it's a phase or a pattern. Everyone gets busy sometimes, but if you always feel like an afterthought, that's worth a real talk."
+    ],
+    ask:"Has something changed recently for either of you, like work, school or stress?"
+  },
+  trust:{
+    label:"Trust or jealousy",
+    keys:["trust","jealous","jealousy","cheat","cheating","lie","lied","lying","suspicious","insecure","phone","other girl","other guy","flirt"],
+    intro:"Trust issues are tough because your mind keeps replaying \"what if\".",
+    tips:[
+      "Separate facts from fears. Write down what you actually know versus what you're imagining. The list of facts is often shorter.",
+      "Talk about it calmly: \"I've been feeling insecure about ___. Can we talk about it?\" Avoid accusing. Give them space to explain.",
+      "If they've broken your trust before, it's fair to need actions, not just words, to rebuild it. Consistency over time is what heals trust.",
+      "Sometimes jealousy is about our own fears from the past. Ask yourself: is this about them, or about something that happened to me before?",
+      "Snooping usually makes you feel worse, not better. If you feel you need to check their phone to feel safe, that's a sign to have an honest talk."
+    ],
+    ask:"Is this coming from something they did, or more of a feeling you can't shake?"
+  },
+  unappreciated:{
+    label:"Not feeling appreciated",
+    keys:["appreciate","appreciated","unappreciated","taken for granted","effort","one sided","one-sided","i do everything","dont care","don't care","not enough"],
+    intro:"Giving a lot and not feeling it come back is draining.",
+    tips:[
+      "People show love in different ways: words, time, help, gifts or touch. They might be showing it in a way you don't notice, and you might be too.",
+      "Tell them what makes you feel cared for, specifically. \"It means a lot when you ask about my day\" is easy for someone to act on.",
+      "Notice and thank the small things they do. Appreciation is often contagious.",
+      "If it truly feels one-sided for a long time, it's okay to step back a bit and see if they step up."
+    ],
+    ask:"What's one thing they could do that would make you feel appreciated?"
+  },
+  talking:{
+    label:"Hard to talk to them",
+    keys:["communicate","communication","talk to","doesn't listen","doesnt listen","won't listen","wont listen","shut down","silent treatment","understand me","don't understand","dont understand"],
+    intro:"When conversations keep going nowhere, it can feel lonely even when you're together.",
+    tips:[
+      "Pick a good time. Not when someone's tired, hungry or about to leave. \"Can we talk tonight after dinner?\" sets it up well.",
+      "Try listening first: let them talk, then repeat back what you heard. \"So you feel ___?\" People open up more when they feel understood.",
+      "Some people find it easier to talk side by side, like on a walk or a drive, instead of face to face.",
+      "If talking keeps blowing up, try writing a calm message or letter. It gives you both time to think before responding."
+    ],
+    ask:"Do they shut down, or does it turn into an argument? The fix is a bit different for each."
+  },
+  breakup:{
+    label:"Breakup / thinking about it",
+    keys:["break up","breakup","broke up","broken up","dumped","ex","leave him","leave her","end it","move on","moving on","heartbreak","heartbroken","miss him","miss her"],
+    intro:"Breakups (or even thinking about one) are some of the hardest feelings there are. Be extra kind to yourself right now.",
+    tips:[
+      "If you're deciding whether to stay: ask yourself \"Do I feel more like myself with them, or less?\" and \"Am I staying for who they are, or who I hope they'll become?\"",
+      "If it's over: let yourself grieve. Crying, being angry and missing them are all normal. It's not weakness, it's healing.",
+      "Try a little distance from their socials for a while. Checking their page keeps the wound open.",
+      "Lean on your people. Spend time with friends who make you laugh. You don't have to go through it alone.",
+      "Don't measure your progress by days. Some days will feel fine and others won't, and that's okay."
+    ],
+    ask:"Are you trying to decide what to do, or getting through one that already happened?"
+  },
+  crush:{
+    label:"Crush or dating",
+    keys:["crush","like him","like her","dating","date","confess","talking stage","situationship","mixed signals","do they like me","does he like me","does she like me"],
+    intro:"Ooh, the exciting and nerve-wracking part. 😄",
+    tips:[
+      "Mixed signals usually mean mixed feelings. Someone who's really into you tends to make it fairly clear.",
+      "It's okay to ask where things stand. \"I'm enjoying this, what are we?\" is fair and saves you weeks of overthinking.",
+      "Be yourself early on. If they only like a version of you that you're performing, it won't last anyway.",
+      "Keep your own life full: friends, hobbies, plans. It's healthier, and confidence is attractive."
+    ],
+    ask:"How long has this been going on, and what's making you unsure?"
+  },
+  friend:{
+    label:"Friend or family drama",
+    keys:["friend","friends","bestie","family","mum","mom","dad","parents","sister","brother","drama","fallout"],
+    intro:"Drama with people close to you can hurt as much as any relationship problem.",
+    tips:[
+      "Talk to the person directly, not around them. Venting to others is fine, but the fix has to happen between the two of you.",
+      "Give the benefit of the doubt once. Ask \"Did you mean it the way it came across?\" before deciding they did.",
+      "It's okay to set boundaries even with family: \"I love you, but I'm not okay with ___.\"",
+      "Some friendships are for a season. If one keeps hurting you, it's okay to give it less of your energy."
+    ],
+    ask:"Who's it with, and what happened?"
+  }
+};
+
+const SAFETY_KEYS = ["hit me","hits me","hurt me","hurts me","abuse","abusive","scared of him","scared of her","afraid of him","afraid of her","threaten","forced","kill myself","suicide","suicidal","end my life","self harm","self-harm","cut myself","want to die","don't want to live","dont want to live","not safe","unsafe"];
+const SAD_KEYS = ["sad","cry","crying","upset","depressed","lonely","alone","hurt","stressed","stress","anxious","anxiety","tired","overwhelmed","down","bad day","awful","terrible","miserable"];
+const BORED_KEYS = ["bored","boring","nothing to do","game","games","play","entertain"];
+const WISDOM_KEYS = ["wisdom","quote","advice quote","words","saying","proverb","wise"];
+const MOTIVATE_KEYS = ["motivate","motivation","motivational","encourage","give up","can't do","cant do","inspire","lazy","unmotivated","push"];
+const REL_KEYS = ["relationship","boyfriend","girlfriend","bf","gf","partner","husband","wife","love","boy","guy","girl"];
+const HI_KEYS = ["hi","hello","hey","hiya","yo","morning","evening"];
+const THANKS_KEYS = ["thanks","thank you","thx","ty","helped","better now"];
+
+/* ===== Chat engine ===== */
+const log = document.getElementById("log");
+const chipsEl = document.getElementById("chips");
+const form = document.getElementById("form");
+const input = document.getElementById("text");
+const used = {};      // remembers which tips were shown so they rotate
+let currentTopic = null;
+
+if (CFG.myName) document.getElementById("sub").textContent = "here when " + CFG.myName + "'s busy";
+
+function pick(list, key){
+  // rotate through a list without repeating until all are used
+  used[key] = used[key] || [];
+  if (used[key].length >= list.length) used[key] = [];
+  const left = list.map((_,i)=>i).filter(i=>!used[key].includes(i));
+  const i = left[Math.floor(Math.random()*left.length)];
+  used[key].push(i);
+  return list[i];
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+
+function addMsg(html, who="bot", cls=""){
+  const d = document.createElement("div");
+  d.className = "msg " + who + (cls ? " " + cls : "");
+  d.innerHTML = html.replace("{games}", CFG.gamesUrl);
+  log.appendChild(d);
+  log.scrollTop = log.scrollHeight;
+}
+function wait(ms){return new Promise(r=>setTimeout(r,ms));}
+let queue = Promise.resolve();
+let gen = 0;
+function say(lines, chips){
+  // bot "types" each line with a small delay so it feels like a chat
+  setChips([]);
+  const g = gen;
+  queue = queue.then(async()=>{
+    for (const line of lines){
+      if (g !== gen) return;
+      const t = document.createElement("div");
+      t.className = "msg bot typing";
+      t.innerHTML = "<span></span><span></span><span></span>";
+      log.appendChild(t); log.scrollTop = log.scrollHeight;
+      const text = typeof line === "string" ? line : line.text;
+      await wait(Math.min(1400, 450 + text.length * 8));
+      t.remove();
+      if (g !== gen) return;
+      addMsg(text, "bot", typeof line === "string" ? "" : line.cls);
+    }
+    setChips(chips || mainChips());
+  });
+}
+function setChips(list){
+  chipsEl.innerHTML = "";
+  list.forEach(c=>{
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip" + (c.primary ? " primary" : "");
+    b.textContent = c.label;
+    b.onclick = ()=>{ addMsg(escapeHtml(c.label), "me"); c.go(); };
+    chipsEl.appendChild(b);
+  });
+}
+
+function mainChips(){
+  return [
+    {label:"💔 Relationship stuff", go:relMenu},
+    {label:"😴 I'm bored", go:bored},
+    {label:"🌿 Words of wisdom", go:wisdom},
+    {label:"🔥 Motivate me", go:motivate},
+    {label:"😔 Just feeling down", go:comfort}
+  ];
+}
+
+/* ===== Flows ===== */
+function greet(){
+  const name = CFG.friendName ? " " + CFG.friendName : "";
+  say([
+    "Hey" + name + "! 👋 " + (CFG.myName ? CFG.myName + " can't pick up right now, so I'm" : "I'm") + " here to keep you company.",
+    "What do you need right now? Tap one, or just type what's going on."
+  ]);
+}
+
+function relMenu(){
+  currentTopic = null;
+  say(["Okay, I'm listening. What's it about?"],
+    Object.entries(REL).map(([k,t])=>({label:t.label, go:()=>relTopic(k)}))
+      .concat([{label:"Something else", go:relOther}]));
+}
+
+function relTopic(k, fromTyping){
+  const t = REL[k];
+  const first = currentTopic !== k;
+  currentTopic = k;
+  const lines = [];
+  if (first) lines.push(t.intro);
+  lines.push("💡 " + pick(t.tips, "rel-" + k));
+  if (first) lines.push(t.ask);
+  say(lines, relFollow(k));
+}
+function relFollow(k){
+  return [
+    {label:"Another tip", primary:true, go:()=>relTopic(k)},
+    {label:"Words of wisdom", go:wisdom},
+    {label:"A different problem", go:relMenu},
+    {label:"Let " + (CFG.myName || "a friend") + " know", go:reachOut},
+    {label:"Back to start", go:home}
+  ];
+}
+function relOther(){
+  say([
+    "No problem. Type out what's happening in your own words and I'll do my best.",
+    "Whatever it is, a few things almost always help:\n• Don't decide anything big while you're upset\n• Say how you feel, not what they did wrong\n• Ask what they need too\n• Sleep on it if you can"
+  ], [
+    {label:"Words of wisdom", go:wisdom},
+    {label:"Let " + (CFG.myName || "a friend") + " know", go:reachOut},
+    {label:"Back to start", go:home}
+  ]);
+  input.focus();
+}
+
+function wisdom(){
+  const ctx = currentTopic ? " for this one" : "";
+  say([{text:"“" + pick(WISDOM,"wisdom") + "”", cls:"quote"}], [
+    {label:"Another one", primary:true, go:wisdom},
+    ...(currentTopic ? [{label:"Back to my problem", go:()=>relTopic(currentTopic)}] : [{label:"💔 Relationship stuff", go:relMenu}]),
+    {label:"Back to start", go:home}
+  ]);
+}
+function motivate(){
+  say(["✨ " + pick(MOTIVATE,"motivate")], [
+    {label:"Another one", primary:true, go:motivate},
+    {label:"Words of wisdom", go:wisdom},
+    {label:"Back to start", go:home}
+  ]);
+}
+function bored(){
+  say(BORED, [
+    {label:"More ideas", go:()=>say(["• Rearrange one corner of your room\n• Watch a documentary about something random\n• Learn 5 words in a new language\n• Write a list of 10 things you're looking forward to\n• Do a face mask and put on a comfort show"])},
+    {label:"Back to start", go:home}
+  ]);
+}
+function comfort(){
+  say([pick(COMFORT,"comfort"), {text:"“" + pick(WISDOM,"wisdom") + "”", cls:"quote"}], [
+    {label:"Is it about a relationship?", go:relMenu},
+    {label:"Motivate me", go:motivate},
+    {label:"Let " + (CFG.myName || "a friend") + " know", go:reachOut},
+    {label:"Back to start", go:home}
+  ]);
+}
+function safety(){
+  say([
+    {text:"I'm really glad you told me. What you're describing sounds serious, and you deserve real support from a real person right now, not just a chatbot.", cls:"warn"},
+    {text:"• If you're in danger or might hurt yourself, please call your local emergency number now.\n• You can also reach a crisis or helpline in your country. Search \"crisis helpline\" with your country name and they'll talk to you any time, free.\n• Please reach out to someone you trust and tell them what's going on.", cls:"warn"},
+    "You matter, and you don't have to handle this alone. 💛"
+  ], [
+    {label:"Let " + (CFG.myName || "a friend") + " know", primary:true, go:reachOut},
+    {label:"Back to start", go:home}
+  ]);
+}
+async function reachOut(){
+  const text = "Hey " + (CFG.myName || "") + ", when you're free can we talk? I could use you right now.";
+  if (navigator.share){
+    try { await navigator.share({text}); say(["Sent it your way. Hopefully they'll get back to you soon. I'm still here meanwhile. 💛"]); return; }
+    catch(e){ if (e && e.name === "AbortError"){ say(["No worries, you can do it whenever you're ready."]); return; } }
+  }
+  try { await navigator.clipboard.writeText(text); say(["I copied this message for you. Paste it into your chat with " + (CFG.myName || "them") + ":\n\n\"" + text + "\""]); }
+  catch(e){ say(["Send " + (CFG.myName || "them") + " a quick message like:\n\n\"" + text + "\""]); }
+}
+function home(){
+  currentTopic = null;
+  say(["Anything else I can help with?"]);
+}
+
+/* ===== Understanding typed messages ===== */
+function has(text, keys){
+  return keys.some(k=>{
+    const re = new RegExp("(^|[^a-z])" + k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&") + "($|[^a-z])");
+    return re.test(text);
+  });
+}
+function bestRelTopic(text){
+  let best = null, score = 0;
+  for (const [k,t] of Object.entries(REL)){
+    const s = t.keys.filter(key=>has(text,[key])).length;
+    if (s > score){ score = s; best = k; }
+  }
+  return best;
+}
+function handleText(raw){
+  const text = raw.toLowerCase().replace(/[’]/g,"'");
+  if (has(text, SAFETY_KEYS)) return safety();
+  const topic = bestRelTopic(text);
+  if (topic) return relTopic(topic, true);
+  if (has(text, BORED_KEYS)) return bored();
+  if (has(text, MOTIVATE_KEYS)) return motivate();
+  if (has(text, WISDOM_KEYS)) return wisdom();
+  if (has(text, SAD_KEYS)) return comfort();
+  if (has(text, REL_KEYS)) return relMenu();
+  if (has(text, THANKS_KEYS)) return say(["Anytime. 💛 I hope things get easier. Come back whenever you need."]);
+  if (has(text, HI_KEYS) && text.length < 15) return greet();
+  if (currentTopic) return say([
+    "Thanks for telling me more. That sounds hard.",
+    "💡 " + pick(REL[currentTopic].tips, "rel-" + currentTopic)
+  ], relFollow(currentTopic));
+  say([
+    "I'm just a simple bot, so I didn't quite catch that. 😅",
+    "Can you tap one of these, or try saying it another way (like \"we keep fighting\" or \"I'm bored\")?"
+  ]);
+}
+
+form.addEventListener("submit", e=>{
+  e.preventDefault();
+  const v = input.value.trim();
+  if (!v) return;
+  addMsg(escapeHtml(v), "me");
+  input.value = "";
+  handleText(v);
+});
+document.getElementById("restart").onclick = ()=>{
+  gen++;
+  log.innerHTML = ""; currentTopic = null;
+  queue = Promise.resolve();
+  greet();
+};
+
+greet();
+</script>
+</body>
+</html>

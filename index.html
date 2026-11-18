@@ -80,8 +80,7 @@ form{display:flex;gap:8px;padding:10px 16px calc(12px + env(safe-area-inset-bott
 const CFG = {
   friendName: "",            // her name, e.g. "Mei" — leave "" for no name
   myName: "Raymond",         // who she can reach out to
-  gamesUrl: "https://ray1png.github.io/main/games/",
-  aiUrl: ""                  // web address of the Cloudflare helper; "" = simple pre-written replies only
+  gamesUrl: "https://ray1png.github.io/main/games/"
 };
 
 /* ===== Content ===== */
@@ -306,13 +305,6 @@ function setChips(list){
 }
 
 function mainChips(){
-  if (aiOn()) return [
-    {label:"💔 Relationship stuff", go:()=>askAI("I need some help with a relationship problem.")},
-    {label:"😴 I'm bored", go:()=>askAI("I'm bored.")},
-    {label:"🌿 Words of wisdom", go:()=>askAI("Can you give me some words of wisdom?")},
-    {label:"🔥 Motivate me", go:()=>askAI("I need some motivation.")},
-    {label:"😔 Just feeling down", go:()=>askAI("I'm just feeling down.")}
-  ];
   return [
     {label:"💔 Relationship stuff", go:relMenu},
     {label:"😴 I'm bored", go:bored},
@@ -437,71 +429,7 @@ function bestRelTopic(text){
   }
   return best;
 }
-/* ===== AI replies (when CFG.aiUrl is set) ===== */
-let aiBroken = false;
-const history = [];   // the chat so far, sent to the AI so it remembers context
-function aiOn(){ return !!CFG.aiUrl && !aiBroken; }
-function formatAI(text){
-  return escapeHtml(text).replace(/https?:\/\/[^\s<]+[^\s<.,!?)]/g,
-    u=>'<a href="'+u+'" target="_blank" rel="noopener">'+u+'</a>');
-}
-function aiChips(){
-  return [
-    {label:"🌿 Words of wisdom", go:()=>askAI("Can you give me some words of wisdom for this?")},
-    {label:"🔥 Motivate me", go:()=>askAI("I need some motivation.")},
-    {label:"😴 I'm bored", go:()=>askAI("I'm bored.")},
-    {label:"Let " + (CFG.myName || "a friend") + " know", go:reachOut}
-  ];
-}
-function askAI(text){
-  setChips([]);
-  history.push({role:"user", content:text});
-  const g = gen;
-  queue = queue.then(async()=>{
-    const t = document.createElement("div");
-    t.className = "msg bot typing";
-    t.innerHTML = "<span></span><span></span><span></span>";
-    log.appendChild(t); log.scrollTop = log.scrollHeight;
-    let answer = null;
-    try {
-      const ctrl = new AbortController();
-      const timer = setTimeout(()=>ctrl.abort(), 45000);
-      const r = await fetch(CFG.aiUrl, {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({messages: history}), signal: ctrl.signal
-      });
-      clearTimeout(timer);
-      const data = await r.json();
-      if (data && data.text) answer = data.text;
-    } catch(e) {}
-    t.remove();
-    if (g !== gen) return;
-    if (answer){
-      history.push({role:"assistant", content:answer});
-      addMsg(formatAI(answer));
-      setChips(aiChips());
-    } else {
-      history.pop();
-      aiBroken = true;
-      addMsg("Sorry, my smart replies aren't working right now, so I'll use my simple ones for a bit. 🙏");
-      setChips([]);
-      ruleReply(text);
-    }
-  });
-}
-
 function handleText(raw){
-  if (CFG.aiUrl && !aiBroken){
-    const text = raw.toLowerCase().replace(/[’]/g,"'");
-    if (has(text, SAFETY_KEYS)) say([
-      {text:"Please hear this first: if you're in danger or might hurt yourself, call your local emergency number now, or a crisis helpline in your country. You deserve real support from a real person. 💛", cls:"warn"}
-    ], []);
-    return askAI(raw);
-  }
-  ruleReply(raw);
-}
-
-function ruleReply(raw){
   const text = raw.toLowerCase().replace(/[’]/g,"'");
   if (has(text, SAFETY_KEYS)) return safety();
   const topic = bestRelTopic(text);
@@ -533,7 +461,6 @@ form.addEventListener("submit", e=>{
 });
 document.getElementById("restart").onclick = ()=>{
   gen++;
-  history.length = 0;
   log.innerHTML = ""; currentTopic = null;
   queue = Promise.resolve();
   greet();

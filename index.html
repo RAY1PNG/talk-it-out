@@ -62,15 +62,15 @@ form{display:flex;gap:8px;padding:10px 16px calc(12px + env(safe-area-inset-bott
     <div class="avatar" aria-hidden="true">🌷</div>
     <div>
       <h1 id="botName">Talk It Out</h1>
-      <p id="sub">here when Raymond's busy</p>
+      <p id="sub">here when Raymond busy</p>
     </div>
     <div class="spacer"></div>
-    <button class="icon-btn" id="restart" type="button">Start over</button>
+    <button class="icon-btn" id="restart" type="button">Start again</button>
   </header>
   <div id="log" aria-live="polite"></div>
   <div id="chips"></div>
   <form id="form" autocomplete="off">
-    <input id="text" placeholder="Type how you're feeling…" aria-label="Your message">
+    <input id="text" placeholder="type here lah, what happen?" aria-label="Your message">
     <button id="send" type="submit">Send</button>
   </form>
 </div>
@@ -83,164 +83,225 @@ const CFG = {
   gamesUrl: "https://ray1png.github.io/main/games/"
 };
 
-/* ===== Content ===== */
+/* ===== Content (Singlish, casual like texting a friend) ===== */
 const WISDOM = [
-  "You can't pour from an empty cup. Look after yourself first, then you'll have more to give.",
-  "Feelings are visitors. Let them come and go, but you don't have to let them drive.",
-  "The right person won't make you feel like you're too much, or not enough.",
-  "Not every thought you have is true. Check before you believe it.",
-  "Speak when you're calm, not when you're hurt. The words will come out kinder.",
-  "Love is a verb. Watch what people do, not just what they say.",
-  "You teach people how to treat you by what you accept.",
-  "It's okay to outgrow people, places and versions of yourself.",
-  "A relationship is two people choosing each other on the hard days too, not just the easy ones.",
-  "Peace is worth more than being right.",
-  "Don't make a forever decision based on a one-night feeling. Sleep on it.",
-  "What's meant for you won't need to be chased, begged for or forced.",
-  "Healing isn't a straight line. Bad days don't erase good progress.",
-  "Be with someone who makes your life calmer, not more confusing.",
-  "When you're unsure, ask. Assuming is how small things turn into big fights.",
-  "Your worth doesn't go up or down based on someone else's attention.",
-  "The goal isn't to never fight. It's to fight fair and come back closer.",
-  "Rest is not giving up. Even the strongest people need to recharge.",
-  "Fall seven times, stand up eight. (Japanese proverb)",
-  "The best time to plant a tree was 20 years ago. The second best time is now. (Chinese proverb)",
-  "This too shall pass."
+  "you cannot pour from an empty cup one. take care of yourself first, then you got more to give.",
+  "feelings come and go like visitors lah. let them sit a while, but dont let them drive the car.",
+  "the right person won't make you feel like you're too much, or not enough.",
+  "not everything your brain tells you at 2am is true. check first before you believe it.",
+  "talk when you're calm, not when you're hurt. the words come out nicer one.",
+  "love is not just what they say ah. watch what they do.",
+  "you teach people how to treat you by what you accept.",
+  "it's ok to outgrow people, places and old versions of yourself.",
+  "relationship is two people choosing each other on the jialat days also, not only the shiok days.",
+  "peace is worth more than being right.",
+  "dont make a forever decision based on one night's feeling. sleep on it first.",
+  "what's meant for you won't need to be chased, begged or forced.",
+  "healing is not a straight line. one bad day doesn't cancel all your progress.",
+  "find someone who makes your life calmer, not more confusing.",
+  "if not sure, ask. assume assume is how small thing become big fight.",
+  "your worth doesn't go up or down based on whether someone reply you.",
+  "the goal is not to never quarrel. it's to quarrel fair and come back closer.",
+  "rest is not giving up. even the strongest people need to recharge.",
+  "fall down seven times, stand up eight.",
+  "best time to plant a tree was 20 years ago. second best time is now.",
+  "this one also will pass one.",
+  "you can't control how other people act. you can only control what you allow.",
+  "if it costs you your peace, it's too expensive.",
+  "closure is something you give yourself, not something you wait for them to give.",
+  "the people who really care will make the effort. you won't need to beg for it."
 ];
 
 const MOTIVATE = [
-  "You've survived every bad day so far. That's a 100% track record. Today won't be the one that beats you. 💪",
-  "Small steps still count. You don't have to fix everything today, just do the next small thing.",
-  "You're doing better than you think you are. Seriously.",
-  "One bad chapter doesn't mean your story is bad. Keep turning pages.",
-  "Be proud of how far you've come, and kind about how far you've still got to go.",
-  "You are allowed to take up space, ask for what you need and say no.",
-  "Drink some water, take three slow breaths, and try again. You've got this.",
-  "Hard things are hard. That's not a sign you're doing it wrong, it's a sign you're doing something that matters."
+  "eh you survived every bad day so far leh. 100% track record. today also cannot beat you one 💪",
+  "small steps also count ok. dont need to settle everything today, just do the next small thing.",
+  "you're doing way better than you think. serious.",
+  "one jialat chapter doesn't mean your whole story bad. keep going.",
+  "be proud of how far you came, and dont be so hard on yourself about how far left to go.",
+  "you're allowed to take up space, ask for what you need and say no. no need paiseh.",
+  "drink some water, take 3 slow breaths, then try again. can one.",
+  "hard things are hard lah. doesn't mean you doing it wrong, means you doing something that matters.",
+  "you dont need to have everything figured out. nobody does also, they just act steady 😂",
+  "the version of you from last year would be proud of you now. trust me.",
+  "rest if you need, but dont give up. different thing ah.",
+  "steady lah. you got this, and if you don't, you got people who got you."
 ];
 
 const COMFORT = [
-  "I'm really sorry you're feeling like this. It makes sense to feel low sometimes, and you don't have to pretend you're fine here.",
-  "That sounds heavy. Be gentle with yourself tonight: something warm to drink, a comfy spot, and no big decisions until you've rested.",
-  "Sometimes it helps just to name it. Try finishing this sentence: \"Right now I feel ___ because ___.\" Typing it out can take a bit of the weight off."
+  "aiyo sorry ah you feeling like this 🫂 its ok to feel low sometimes. here dont need to act like you fine.",
+  "sounds heavy sia. tonight go easy on yourself ok: drink something warm, find a comfy spot, and dont make any big decision until you slept.",
+  "sometimes typing it out helps. try finish this: \"right now i feel ___ because ___.\" let it out a bit, dont keep everything inside.",
+  "sian days happen to everyone, doesn't mean you doing badly. tomorrow is a new one ok.",
+  "if you wanna cry just cry. no shame one. after that wash face, eat something, then we see how."
 ];
 
 const BORED = [
-  "Bored? I've got you. Raymond made some games you can play, some solo and some with a friend:\n<a href=\"{games}\" target=\"_blank\" rel=\"noopener\">🎮 Open the games</a>",
-  "Some other ideas while you're at it:\n• Make a playlist for your current mood\n• Go for a 10-minute walk and look for 3 things you've never noticed\n• Text an old friend a random memory you have of them\n• Try a 5-minute sketch of whatever's in front of you\n• Find a new recipe and make it tonight"
+  "sian ah? come, Raymond made some games you can play, got solo one and some to play with a friend:\n<a href=\"{games}\" target=\"_blank\" rel=\"noopener\">🎮 open the games</a>",
+  "or try one of these:\n• make a playlist for your current mood\n• go walk 10 min downstairs, see got anything you never notice before\n• text an old friend some random memory of them\n• doodle whatever is in front of you for 5 min\n• find a new recipe and cook tonight"
 ];
+const MORE_BORED = "more ideas:\n• rearrange one corner of your room\n• watch some random documentary\n• learn 5 words in a new language\n• list 10 things you looking forward to\n• face mask + comfort show, shiok";
 
-/* Relationship topics: label shown on chip, keywords for typing, intro, tips (rotated), a reflection question */
+/* Relationship topics: chip label, keywords for typing, intro, tips (rotated), a question back */
 const REL = {
   fighting:{
-    label:"We keep fighting",
-    keys:["fight","fighting","argue","argument","arguing","quarrel","shout","yell","angry at","mad at","blew up"],
-    intro:"Fighting a lot is exhausting. Let's slow it down a bit.",
+    label:"keep quarrelling",
+    keys:["fight","fighting","fought","argue","argument","arguing","quarrel","quarrelling","shout","yell","angry","mad at","blew up","pek chek","scold"],
+    intro:"aiyo, quarrel until so tired right. ok we slow it down a bit.",
     tips:[
-      "Take a time-out when it gets heated. Say \"I want to sort this out, but I need 20 minutes to calm down first.\" Then actually come back to it.",
-      "Use \"I feel\" instead of \"you always\". For example: \"I feel left out when plans change last minute\" lands softer than \"You never think about me.\"",
-      "Ask yourselves: what is this fight really about? Often a fight about dishes is really about not feeling respected or helped.",
-      "Pick one issue at a time. Bringing up old fights turns one problem into ten and nobody wins.",
-      "After it's over, check in: \"Are we okay?\" A small repair (a hug, a joke, a sorry) matters more than who was right."
+      "when it starts getting heated, call time out first. say \"i want to settle this, but give me 20 min to cool down.\" then really come back and talk ah, dont just disappear.",
+      "try say \"i feel\" instead of \"you always\". like \"i feel left out when you change plan last minute\" sounds a lot softer than \"you never think about me one.\"",
+      "ask yourselves what the fight is REALLY about. a lot of time quarrel over small thing like late reply is actually about not feeling important.",
+      "one issue at a time ok. once start bringing out old stories, one problem become ten, confirm nobody win.",
+      "after quarrel, check in: \"we ok?\" small make up like a hug, a joke or a sorry matters more than who was right.",
+      "dont quarrel over text if can avoid. tone all wrong one. call or meet then talk.",
+      "if every fight is the same fight, means the real issue not settled yet. sit down on a calm day and settle that one properly."
     ],
-    ask:"What do the fights usually start over? Sometimes spotting the pattern is half the fix."
+    ask:"usually quarrel over what one? if can spot the pattern, half settled already."
   },
   distant:{
-    label:"Feeling distant or ignored",
-    keys:["ignore","ignored","ignoring","distant","distance","cold","dry","no time","busy","not texting","doesn't text","doesnt text","left on read","seen zone","drifting"],
-    intro:"Feeling far from someone you care about really hurts, especially when you're not sure why.",
+    label:"he ignoring me / dry",
+    keys:["ignore","ignored","ignoring","distant","distance","cold","dry","no time","busy","not texting","doesnt text","doesn't text","dont reply","don't reply","never reply","no reply","late reply","left on read","seen zone","bluetick","blue tick","ghost","ghosted","ghosting","drifting","mia"],
+    intro:"feel far from someone you care about damn sad one, especially when you dont know why.",
     tips:[
-      "Before assuming the worst, ask gently: \"Hey, I've been missing you lately. Is everything okay with you?\" They might be stressed about something unrelated.",
-      "Say what you need clearly instead of hinting. \"Could we have a proper call this weekend?\" works better than hoping they'll notice.",
-      "Plan something small together, like a walk, a meal or a game night. Closeness often comes back through doing things side by side.",
-      "Notice if it's a phase or a pattern. Everyone gets busy sometimes, but if you always feel like an afterthought, that's worth a real talk."
+      "before think the worst, ask him nicely: \"eh i miss you lately, everything ok with you?\" maybe he stressed about something else, not about you.",
+      "say what you need straight, dont hint. \"can we call properly this weekend?\" works way better than waiting for him to notice.",
+      "plan something small together, like makan, walk, or game night. closeness usually come back when you do stuff together.",
+      "see if it's a phase or a pattern. everybody busy sometimes ok, but if you always feel like last priority, then must talk properly.",
+      "try not to double, triple text when you're anxious. send one clear message, then go do your own thing. your phone not going anywhere.",
+      "if he ghost totally with no explanation, that's an answer by itself already. you deserve someone who reply you lah."
     ],
-    ask:"Has something changed recently for either of you, like work, school or stress?"
+    ask:"recently got anything changed for either of you? like work, school or stress?"
   },
   trust:{
-    label:"Trust or jealousy",
-    keys:["trust","jealous","jealousy","cheat","cheating","lie","lied","lying","suspicious","insecure","phone","other girl","other guy","flirt"],
-    intro:"Trust issues are tough because your mind keeps replaying \"what if\".",
+    label:"trust issues / jealous",
+    keys:["trust","jealous","jealousy","cheat","cheating","cheated","lie","lied","lying","suspicious","insecure","his phone","her phone","other girl","other guy","another girl","flirt","flirting","ex gf","ex bf","sus"],
+    intro:"trust issue very tiring one, your brain keep playing \"what if\" non stop.",
     tips:[
-      "Separate facts from fears. Write down what you actually know versus what you're imagining. The list of facts is often shorter.",
-      "Talk about it calmly: \"I've been feeling insecure about ___. Can we talk about it?\" Avoid accusing. Give them space to explain.",
-      "If they've broken your trust before, it's fair to need actions, not just words, to rebuild it. Consistency over time is what heals trust.",
-      "Sometimes jealousy is about our own fears from the past. Ask yourself: is this about them, or about something that happened to me before?",
-      "Snooping usually makes you feel worse, not better. If you feel you need to check their phone to feel safe, that's a sign to have an honest talk."
+      "separate facts and fears. write down what you actually KNOW, and what you just imagining. usually the facts list shorter than you think.",
+      "talk about it calmly: \"i've been feeling insecure about ___, can we talk?\" dont accuse first, give him chance to explain.",
+      "if he really broke your trust before, it's fair to need actions, not just sweet talk. consistent over time is what fixes trust.",
+      "sometimes jealousy is from our own past ah. ask yourself: is this about him, or about something that happened to me last time?",
+      "check his phone usually make you feel worse, not better. if you feel like you need to check then can feel safe, that's a sign to talk properly.",
+      "if you caught him lying many times already, it's not you being crazy ok. trust your gut."
     ],
-    ask:"Is this coming from something they did, or more of a feeling you can't shake?"
+    ask:"is this because of something he did, or more like a feeling you cannot shake off?"
+  },
+  overthink:{
+    label:"overthinking",
+    keys:["overthink","overthinking","overthinker","keep thinking","cant stop thinking","can't stop thinking","what if","paranoid","worried","worry","anxious"],
+    intro:"overthinking ah… the brain can create whole drama series from one emoji 😂 ok we calm it down.",
+    tips:[
+      "ask yourself: is this a fact, or a story i'm telling myself? most of the time is story.",
+      "give yourself 10 min to worry, set timer. after that go do something else, shower, walk, play game. dont let it run whole night.",
+      "if the thing can be solved by asking, just ask. 1 awkward question better than 3 days of overthinking.",
+      "dont go scroll his IG / last seen / likes. that one is fuel for overthinking only.",
+      "write everything down. once it's on paper it usually looks smaller than in your head.",
+      "late night thoughts are the worst. if it's late, sleep first. tomorrow morning you'll see it differently."
+    ],
+    ask:"what's the one thing your brain keep replaying right now?"
   },
   unappreciated:{
-    label:"Not feeling appreciated",
-    keys:["appreciate","appreciated","unappreciated","taken for granted","effort","one sided","one-sided","i do everything","dont care","don't care","not enough"],
-    intro:"Giving a lot and not feeling it come back is draining.",
+    label:"not appreciated",
+    keys:["appreciate","appreciated","unappreciated","taken for granted","effort","one sided","one-sided","i do everything","dont care","don't care","not enough","no effort","never bother"],
+    intro:"give and give but never feel it come back, very draining one.",
     tips:[
-      "People show love in different ways: words, time, help, gifts or touch. They might be showing it in a way you don't notice, and you might be too.",
-      "Tell them what makes you feel cared for, specifically. \"It means a lot when you ask about my day\" is easy for someone to act on.",
-      "Notice and thank the small things they do. Appreciation is often contagious.",
-      "If it truly feels one-sided for a long time, it's okay to step back a bit and see if they step up."
+      "everybody show love differently: words, time, helping, gifts, or hugs. maybe he showing it in a way you dont notice, and same for you.",
+      "tell him specifically what makes you feel cared for. \"i like it when you ask how my day was\" is very easy for him to do.",
+      "notice and thank the small things he do also. appreciation is contagious one.",
+      "if it's one sided for very long already, it's ok to step back a bit and see if he step up.",
+      "dont keep score too much ah, but also dont keep giving until you got nothing left for yourself."
     ],
-    ask:"What's one thing they could do that would make you feel appreciated?"
+    ask:"what's one thing he could do that would make you feel appreciated?"
   },
   talking:{
-    label:"Hard to talk to them",
-    keys:["communicate","communication","talk to","doesn't listen","doesnt listen","won't listen","wont listen","shut down","silent treatment","understand me","don't understand","dont understand"],
-    intro:"When conversations keep going nowhere, it can feel lonely even when you're together.",
+    label:"cannot talk to him",
+    keys:["communicate","communication","talk to him","talk to her","doesnt listen","doesn't listen","wont listen","won't listen","shut down","silent treatment","cold war","understand me","dont understand","don't understand","dont get me","don't get me"],
+    intro:"when talk also go nowhere, can feel lonely even when you're together.",
     tips:[
-      "Pick a good time. Not when someone's tired, hungry or about to leave. \"Can we talk tonight after dinner?\" sets it up well.",
-      "Try listening first: let them talk, then repeat back what you heard. \"So you feel ___?\" People open up more when they feel understood.",
-      "Some people find it easier to talk side by side, like on a walk or a drive, instead of face to face.",
-      "If talking keeps blowing up, try writing a calm message or letter. It gives you both time to think before responding."
+      "choose a good time. not when he tired, hungry or rushing out. \"can we talk tonight after dinner?\" sets it up better.",
+      "listen first: let him talk, then repeat back what you heard. \"so you feel ___ ah?\" people open up more when they feel understood.",
+      "some people easier to talk side by side, like walking or in the car, instead of face to face staring.",
+      "if keep blowing up when talk, try write a calm message or letter. both of you got time to think before reply.",
+      "if he give silent treatment, tell him: \"i'll give you space, but i want us to talk by tomorrow ok?\" space is fine, ghosting the problem is not."
     ],
-    ask:"Do they shut down, or does it turn into an argument? The fix is a bit different for each."
+    ask:"he usually shut down, or it turns into a quarrel? fix a bit different for each."
   },
   breakup:{
-    label:"Breakup / thinking about it",
-    keys:["break up","breakup","broke up","broken up","dumped","ex","leave him","leave her","end it","move on","moving on","heartbreak","heartbroken","miss him","miss her"],
-    intro:"Breakups (or even thinking about one) are some of the hardest feelings there are. Be extra kind to yourself right now.",
+    label:"break up / thinking about it",
+    keys:["break up","breakup","broke up","broken up","dumped","my ex","leave him","leave her","end it","move on","moving on","heartbreak","heartbroken","miss him","miss her","want to break","should i break"],
+    intro:"break up, or even thinking about it, is one of the most painful things sia. be extra nice to yourself now ok.",
     tips:[
-      "If you're deciding whether to stay: ask yourself \"Do I feel more like myself with them, or less?\" and \"Am I staying for who they are, or who I hope they'll become?\"",
-      "If it's over: let yourself grieve. Crying, being angry and missing them are all normal. It's not weakness, it's healing.",
-      "Try a little distance from their socials for a while. Checking their page keeps the wound open.",
-      "Lean on your people. Spend time with friends who make you laugh. You don't have to go through it alone.",
-      "Don't measure your progress by days. Some days will feel fine and others won't, and that's okay."
+      "if you deciding whether to stay, ask yourself: \"am i more myself with him, or less?\" and \"am i staying for who he is, or who i hope he'll become?\"",
+      "if it's over already: let yourself be sad. cry, angry, miss him, all normal. not weak ah, that's healing.",
+      "mute or unfollow his socials for a while. keep checking his page is like keep pressing on a bruise.",
+      "go out with your friends, the ones who make you laugh. dont need to go through this alone.",
+      "dont count by days. some days ok, some days not ok, that's normal. it does get better.",
+      "dont text him at 2am. if you really need to type it out, type in notes app, read again tomorrow morning."
     ],
-    ask:"Are you trying to decide what to do, or getting through one that already happened?"
+    ask:"you trying to decide what to do, or getting over one that happened already?"
   },
   crush:{
-    label:"Crush or dating",
-    keys:["crush","like him","like her","dating","date","confess","talking stage","situationship","mixed signals","do they like me","does he like me","does she like me"],
-    intro:"Ooh, the exciting and nerve-wracking part. 😄",
+    label:"crush / talking stage",
+    keys:["crush","like him","like her","dating","date","confess","talking stage","situationship","mixed signals","do they like me","does he like me","does she like me","he likes me","friend zone","friendzone"],
+    intro:"ooh ok this one exciting but also kancheong part 😆",
     tips:[
-      "Mixed signals usually mean mixed feelings. Someone who's really into you tends to make it fairly clear.",
-      "It's okay to ask where things stand. \"I'm enjoying this, what are we?\" is fair and saves you weeks of overthinking.",
-      "Be yourself early on. If they only like a version of you that you're performing, it won't last anyway.",
-      "Keep your own life full: friends, hobbies, plans. It's healthier, and confidence is attractive."
+      "mixed signals usually means mixed feelings. if he really keen on you, usually quite obvious one.",
+      "it's ok to ask where things stand. \"i'm enjoying this, so what are we ah?\" fair question, and save you weeks of overthinking.",
+      "be yourself from the start. if he only likes the act version of you, cannot last one.",
+      "keep your own life full: friends, hobbies, plans. healthier, and confidence is attractive.",
+      "dont reply in 1 second every time just because you like him lol. you have a life also mah.",
+      "if you're the only one always starting the convo, take a step back and see if he comes to you."
     ],
-    ask:"How long has this been going on, and what's making you unsure?"
+    ask:"how long already, and what's making you not sure?"
+  },
+  ldr:{
+    label:"long distance",
+    keys:["long distance","ldr","overseas","different country","time difference","far away","miss him so much","cant see him","can't see him"],
+    intro:"ldr is really not easy, respect for even trying 🫶",
+    tips:[
+      "have a fixed call time, even if short. something to look forward to helps a lot.",
+      "do stuff together online: watch a show at the same time, play games together, eat dinner on video call.",
+      "always have the next meet up date planned. counting down feels way better than \"don't know when\".",
+      "tell each other about small boring stuff in your day also. that's what makes you feel part of each other's life.",
+      "trust is extra important here. if got doubts, talk about it early, dont let it build up."
+    ],
+    ask:"when's the next time you two can meet?"
+  },
+  changed:{
+    label:"he changed",
+    keys:["changed","not the same","different already","not like last time","last time he","used to","lost interest","no spark","bored of me","fell out of love"],
+    intro:"when someone feel different from last time, it's very confusing and kind of scary.",
+    tips:[
+      "the honeymoon phase ending is normal ah, the butterflies calm down. doesn't automatically mean he love you less.",
+      "but if he stop making effort completely, that one need to talk. \"i miss how we used to be, can we try a bit more?\"",
+      "try something new together. new place, new activity. new experiences bring back the spark.",
+      "ask yourself if you changed also. sometimes both drift, nobody's fault."
+    ],
+    ask:"what's the biggest change you noticed?"
   },
   friend:{
-    label:"Friend or family drama",
-    keys:["friend","friends","bestie","family","mum","mom","dad","parents","sister","brother","drama","fallout"],
-    intro:"Drama with people close to you can hurt as much as any relationship problem.",
+    label:"friend / family drama",
+    keys:["friend","friends","bestie","bff","family","mum","mom","mummy","dad","daddy","parents","sister","brother","drama","fallout","backstab"],
+    intro:"drama with people close to you also can pain like relationship problem one.",
     tips:[
-      "Talk to the person directly, not around them. Venting to others is fine, but the fix has to happen between the two of you.",
-      "Give the benefit of the doubt once. Ask \"Did you mean it the way it came across?\" before deciding they did.",
-      "It's okay to set boundaries even with family: \"I love you, but I'm not okay with ___.\"",
-      "Some friendships are for a season. If one keeps hurting you, it's okay to give it less of your energy."
+      "talk to the person directly, dont go around them. vent to others ok, but the settling must be between you two.",
+      "give benefit of the doubt once first. ask \"you meant it the way it sounded ah?\" before deciding they did.",
+      "can set boundaries even with family: \"i love you, but i'm not ok with ___.\"",
+      "some friendships are for one season only. if one keep hurting you, it's ok to give it less energy.",
+      "parents sometimes nag because they worried, but doesn't mean they always right. can respect them and still make your own choice."
     ],
-    ask:"Who's it with, and what happened?"
+    ask:"who's it with, and what happened?"
   }
 };
 
-const SAFETY_KEYS = ["hit me","hits me","hurt me","hurts me","abuse","abusive","scared of him","scared of her","afraid of him","afraid of her","threaten","forced","kill myself","suicide","suicidal","end my life","self harm","self-harm","cut myself","want to die","don't want to live","dont want to live","not safe","unsafe"];
-const SAD_KEYS = ["sad","cry","crying","upset","depressed","lonely","alone","hurt","stressed","stress","anxious","anxiety","tired","overwhelmed","down","bad day","awful","terrible","miserable"];
-const BORED_KEYS = ["bored","boring","nothing to do","game","games","play","entertain"];
-const WISDOM_KEYS = ["wisdom","quote","advice quote","words","saying","proverb","wise"];
-const MOTIVATE_KEYS = ["motivate","motivation","motivational","encourage","give up","can't do","cant do","inspire","lazy","unmotivated","push"];
-const REL_KEYS = ["relationship","boyfriend","girlfriend","bf","gf","partner","husband","wife","love","boy","guy","girl"];
-const HI_KEYS = ["hi","hello","hey","hiya","yo","morning","evening"];
-const THANKS_KEYS = ["thanks","thank you","thx","ty","helped","better now"];
+const SAFETY_KEYS = ["hit me","hits me","hurt me","hurts me","beat me","slap me","slapped me","abuse","abusive","scared of him","scared of her","afraid of him","afraid of her","threaten","threatened","forced me","kill myself","suicide","suicidal","end my life","self harm","self-harm","cut myself","want to die","dont want to live","don't want to live","not safe","unsafe","no point living"];
+const SAD_KEYS = ["sad","cry","crying","upset","depressed","lonely","alone","hurt","stressed","stress","tired","overwhelmed","down","bad day","awful","terrible","miserable","sian","jialat","walao","sad sia","emo","shag","no mood"];
+const BORED_KEYS = ["bored","boring","nothing to do","game","games","play","entertain","so free","bo liao"];
+const WISDOM_KEYS = ["wisdom","quote","quotes","words","saying","proverb","wise"];
+const MOTIVATE_KEYS = ["motivate","motivation","motivational","encourage","give up","can't do","cant do","inspire","lazy","unmotivated","push","no energy","cannot make it"];
+const REL_KEYS = ["relationship","boyfriend","girlfriend","bf","gf","partner","husband","wife","hubby","love","boy","guy","girl","he","him"];
+const HI_KEYS = ["hi","hello","hey","hiya","yo","morning","evening","oi"];
+const THANKS_KEYS = ["thanks","thank you","thx","ty","tq","helped","better now","ok la","okay la","feel better"];
 
 /* ===== Chat engine ===== */
 const log = document.getElementById("log");
@@ -249,8 +310,9 @@ const form = document.getElementById("form");
 const input = document.getElementById("text");
 const used = {};      // remembers which tips were shown so they rotate
 let currentTopic = null;
+const ME = CFG.myName || "a friend";
 
-if (CFG.myName) document.getElementById("sub").textContent = "here when " + CFG.myName + "'s busy";
+if (CFG.myName) document.getElementById("sub").textContent = "here when " + CFG.myName + " busy";
 
 function pick(list, key){
   // rotate through a list without repeating until all are used
@@ -306,11 +368,11 @@ function setChips(list){
 
 function mainChips(){
   return [
-    {label:"💔 Relationship stuff", go:relMenu},
-    {label:"😴 I'm bored", go:bored},
-    {label:"🌿 Words of wisdom", go:wisdom},
-    {label:"🔥 Motivate me", go:motivate},
-    {label:"😔 Just feeling down", go:comfort}
+    {label:"💔 relationship stuff", go:relMenu},
+    {label:"😴 sian, bored", go:bored},
+    {label:"🌿 words of wisdom", go:wisdom},
+    {label:"🔥 motivate me pls", go:motivate},
+    {label:"😔 just feeling down", go:comfort}
   ];
 }
 
@@ -318,19 +380,19 @@ function mainChips(){
 function greet(){
   const name = CFG.friendName ? " " + CFG.friendName : "";
   say([
-    "Hey" + name + "! 👋 " + (CFG.myName ? CFG.myName + " can't pick up right now, so I'm" : "I'm") + " here to keep you company.",
-    "What do you need right now? Tap one, or just type what's going on."
+    "heyyy" + name + " 👋 " + (CFG.myName ? CFG.myName + " cannot pick up now, so i keep you company first ok" : "i'm here to keep you company ok"),
+    "what you need now? tap one, or just type what happen."
   ]);
 }
 
 function relMenu(){
   currentTopic = null;
-  say(["Okay, I'm listening. What's it about?"],
+  say(["ok i'm listening. about what?"],
     Object.entries(REL).map(([k,t])=>({label:t.label, go:()=>relTopic(k)}))
-      .concat([{label:"Something else", go:relOther}]));
+      .concat([{label:"something else", go:relOther}]));
 }
 
-function relTopic(k, fromTyping){
+function relTopic(k){
   const t = REL[k];
   const first = currentTopic !== k;
   currentTopic = k;
@@ -342,76 +404,76 @@ function relTopic(k, fromTyping){
 }
 function relFollow(k){
   return [
-    {label:"Another tip", primary:true, go:()=>relTopic(k)},
-    {label:"Words of wisdom", go:wisdom},
-    {label:"A different problem", go:relMenu},
-    {label:"Let " + (CFG.myName || "a friend") + " know", go:reachOut},
-    {label:"Back to start", go:home}
+    {label:"another tip", primary:true, go:()=>relTopic(k)},
+    {label:"words of wisdom", go:wisdom},
+    {label:"different problem", go:relMenu},
+    {label:"tell " + ME + " i need talk", go:reachOut},
+    {label:"back to start", go:home}
   ];
 }
 function relOther(){
   say([
-    "No problem. Type out what's happening in your own words and I'll do my best.",
-    "Whatever it is, a few things almost always help:\n• Don't decide anything big while you're upset\n• Say how you feel, not what they did wrong\n• Ask what they need too\n• Sleep on it if you can"
+    "can, type out what happened in your own words, i try my best.",
+    "whatever it is, these usually help:\n• dont decide anything big when you're upset\n• say how you feel, not what he did wrong\n• ask what he needs also\n• sleep on it if can"
   ], [
-    {label:"Words of wisdom", go:wisdom},
-    {label:"Let " + (CFG.myName || "a friend") + " know", go:reachOut},
-    {label:"Back to start", go:home}
+    {label:"words of wisdom", go:wisdom},
+    {label:"tell " + ME + " i need talk", go:reachOut},
+    {label:"back to start", go:home}
   ]);
   input.focus();
 }
 
 function wisdom(){
-  const ctx = currentTopic ? " for this one" : "";
   say([{text:"“" + pick(WISDOM,"wisdom") + "”", cls:"quote"}], [
-    {label:"Another one", primary:true, go:wisdom},
-    ...(currentTopic ? [{label:"Back to my problem", go:()=>relTopic(currentTopic)}] : [{label:"💔 Relationship stuff", go:relMenu}]),
-    {label:"Back to start", go:home}
+    {label:"another one", primary:true, go:wisdom},
+    ...(currentTopic ? [{label:"back to my problem", go:()=>relTopic(currentTopic)}] : [{label:"💔 relationship stuff", go:relMenu}]),
+    {label:"back to start", go:home}
   ]);
 }
 function motivate(){
   say(["✨ " + pick(MOTIVATE,"motivate")], [
-    {label:"Another one", primary:true, go:motivate},
-    {label:"Words of wisdom", go:wisdom},
-    {label:"Back to start", go:home}
+    {label:"another one", primary:true, go:motivate},
+    {label:"words of wisdom", go:wisdom},
+    {label:"back to start", go:home}
   ]);
 }
 function bored(){
   say(BORED, [
-    {label:"More ideas", go:()=>say(["• Rearrange one corner of your room\n• Watch a documentary about something random\n• Learn 5 words in a new language\n• Write a list of 10 things you're looking forward to\n• Do a face mask and put on a comfort show"])},
-    {label:"Back to start", go:home}
+    {label:"more ideas", go:()=>say([MORE_BORED])},
+    {label:"back to start", go:home}
   ]);
 }
 function comfort(){
   say([pick(COMFORT,"comfort"), {text:"“" + pick(WISDOM,"wisdom") + "”", cls:"quote"}], [
-    {label:"Is it about a relationship?", go:relMenu},
-    {label:"Motivate me", go:motivate},
-    {label:"Let " + (CFG.myName || "a friend") + " know", go:reachOut},
-    {label:"Back to start", go:home}
+    {label:"is about relationship", go:relMenu},
+    {label:"motivate me pls", go:motivate},
+    {label:"tell " + ME + " i need talk", go:reachOut},
+    {label:"back to start", go:home}
   ]);
 }
 function safety(){
+  // kept clear and simple on purpose: this one must be easy to understand
   say([
-    {text:"I'm really glad you told me. What you're describing sounds serious, and you deserve real support from a real person right now, not just a chatbot.", cls:"warn"},
-    {text:"• If you're in danger or might hurt yourself, please call your local emergency number now.\n• You can also reach a crisis or helpline in your country. Search \"crisis helpline\" with your country name and they'll talk to you any time, free.\n• Please reach out to someone you trust and tell them what's going on.", cls:"warn"},
-    "You matter, and you don't have to handle this alone. 💛"
+    {text:"thank you for telling me. what you're saying sounds serious, and you deserve real help from a real person now, not just a chatbot.", cls:"warn"},
+    {text:"• if you're in danger or might hurt yourself, please call your local emergency number now.\n• you can also call a crisis helpline in your country. search \"crisis helpline\" with your country name, they're free and will talk to you anytime.\n• please tell someone you trust what's going on.", cls:"warn"},
+    "you matter ok. you don't have to go through this alone 💛"
   ], [
-    {label:"Let " + (CFG.myName || "a friend") + " know", primary:true, go:reachOut},
-    {label:"Back to start", go:home}
+    {label:"tell " + ME + " i need talk", primary:true, go:reachOut},
+    {label:"back to start", go:home}
   ]);
 }
 async function reachOut(){
-  const text = "Hey " + (CFG.myName || "") + ", when you're free can we talk? I could use you right now.";
+  const text = "eh " + (CFG.myName || "") + ", when you free can we talk? need you a bit now.";
   if (navigator.share){
-    try { await navigator.share({text}); say(["Sent it your way. Hopefully they'll get back to you soon. I'm still here meanwhile. 💛"]); return; }
-    catch(e){ if (e && e.name === "AbortError"){ say(["No worries, you can do it whenever you're ready."]); return; } }
+    try { await navigator.share({text}); say(["sent liao. hopefully he reply you soon. i'm still here meanwhile 💛"]); return; }
+    catch(e){ if (e && e.name === "AbortError"){ say(["no worries, send whenever you ready."]); return; } }
   }
-  try { await navigator.clipboard.writeText(text); say(["I copied this message for you. Paste it into your chat with " + (CFG.myName || "them") + ":\n\n\"" + text + "\""]); }
-  catch(e){ say(["Send " + (CFG.myName || "them") + " a quick message like:\n\n\"" + text + "\""]); }
+  try { await navigator.clipboard.writeText(text); say(["i copied this message for you, just paste in your chat with " + (CFG.myName || "him") + ":\n\n\"" + text + "\""]); }
+  catch(e){ say(["send " + (CFG.myName || "him") + " something like:\n\n\"" + text + "\""]); }
 }
 function home(){
   currentTopic = null;
-  say(["Anything else I can help with?"]);
+  say(["anything else i can help?"]);
 }
 
 /* ===== Understanding typed messages ===== */
@@ -433,21 +495,21 @@ function handleText(raw){
   const text = raw.toLowerCase().replace(/[’]/g,"'");
   if (has(text, SAFETY_KEYS)) return safety();
   const topic = bestRelTopic(text);
-  if (topic) return relTopic(topic, true);
+  if (topic) return relTopic(topic);
   if (has(text, BORED_KEYS)) return bored();
   if (has(text, MOTIVATE_KEYS)) return motivate();
   if (has(text, WISDOM_KEYS)) return wisdom();
   if (has(text, SAD_KEYS)) return comfort();
+  if (has(text, THANKS_KEYS)) return say(["anytime ok 💛 hope things get better. come back whenever you need."]);
   if (has(text, REL_KEYS)) return relMenu();
-  if (has(text, THANKS_KEYS)) return say(["Anytime. 💛 I hope things get easier. Come back whenever you need."]);
   if (has(text, HI_KEYS) && text.length < 15) return greet();
   if (currentTopic) return say([
-    "Thanks for telling me more. That sounds hard.",
+    "ok i hear you. sounds tough sia.",
     "💡 " + pick(REL[currentTopic].tips, "rel-" + currentTopic)
   ], relFollow(currentTopic));
   say([
-    "I'm just a simple bot, so I didn't quite catch that. 😅",
-    "Can you tap one of these, or try saying it another way (like \"we keep fighting\" or \"I'm bored\")?"
+    "sorry ah i'm just a simple bot, never catch that 😅",
+    "can tap one of these, or say it another way? like \"we keep quarrelling\" or \"i'm bored\"."
   ]);
 }
 
